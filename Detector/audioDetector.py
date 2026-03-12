@@ -30,9 +30,14 @@ class audioDetector:
     
     def findSpikes(self, rms, sr):
         """Finds audio spikes based on RMS values and sample rate."""
-        mean = np.mean(rms)
-        std = np.std(rms)
-        
+
+        #calculate the lower 25th percentile median
+        percentile25 = np.percentile(rms, 25)
+        #calculate mean and std of all values above the 25th percentile
+        abovePercentile = rms[rms > percentile25]
+        mean = np.mean(abovePercentile)
+        std = np.std(abovePercentile)
+
         threshold = mean + self.threshold * std
         spikeFrames = np.where(rms > threshold)[0]
         spikeTimes = librosa.frames_to_time(spikeFrames, sr=sr)

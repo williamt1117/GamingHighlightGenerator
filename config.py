@@ -5,19 +5,19 @@ class MainConfig:
 
 class AudioDetectorConfig:
     def __init__(self):
-        self.threshold = 6 # Number of standard deviations above mean RMS to consider a spike
+        self.threshold = 6.5 # Number of standard deviations above mean RMS to consider a spike
         self.sr = 16000 # Sample rate for audio processing
 
 class KillDetectorConfig:
     def __init__(self):
-        self.threshold = 0.01 # Ratio of matching pixels to total pixels to consider a kill detected
+        self.threshold = 0.008 # Ratio of matching pixels to total pixels to consider a kill detected
         self.sampleFrequency = 2.0 # Frequency for sampling frames for kill detection
         self.lowerHSV = [30, 90, 170] # Lower bound of HSV values for kill feed highlight color
         self.upperHSV = [40, 170, 255] # Upper bound of HSV values for kill feed highlight color
 
         self.killFeedOriginalWidth = 2560 # Original width of video used for kill feed region calculation
         self.killFeedOriginalHeight = 1440 # Original height of video used for kill feed region calculation
-        self.killFeedX1 = 1927 # X1 coordinate of kill feed region in original resolution
+        self.killFeedX1 = 1846 # X1 coordinate of kill feed region in original resolution
         self.killFeedY1 = 118 # Y1 coordinate of kill feed region in original resolution
         self.killFeedX2 = 2257 # X2 coordinate of kill feed region in original resolution
         self.killFeedY2 = 348 # Y2 coordinate of kill feed region in original resolution
@@ -31,4 +31,4 @@ class ClipWindowCreatorConfig:
 
 class TimelineMergerConfig:
     def __init__(self):
-        self.mergeThreshold = 3 # Maximum gap in seconds between clips to consider for merging
+        self.mergeThreshold = 5.5 # Maximum gap in seconds between clips to consider for merging

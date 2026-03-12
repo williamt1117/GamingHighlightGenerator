@@ -1,0 +1,6 @@
+__pycache__/
+
+Data/InputClips/*
+!Data/InputClips/.gitkeep
+Data/OutputHighlights/*
+!Data/OutputHighlights/.gitkeep
