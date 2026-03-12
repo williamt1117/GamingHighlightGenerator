@@ -1,0 +1,1 @@
+"""Detector package for audio and kill-feed signal extraction."""
