@@ -10,7 +10,7 @@ class AudioDetectorConfig:
 
 class KillDetectorConfig:
     def __init__(self):
-        self.threshold = 0.008 # Ratio of matching pixels to total pixels to consider a kill detected
+        self.threshold = 0.008 # Ratio of matching pixels to total pixels to consider a kill    detected
         self.sampleFrequency = 2.0 # Frequency for sampling frames for kill detection
         self.lowerHSV = [30, 90, 170] # Lower bound of HSV values for kill feed highlight color
         self.upperHSV = [40, 170, 255] # Upper bound of HSV values for kill feed highlight color
