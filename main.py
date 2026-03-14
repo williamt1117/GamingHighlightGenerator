@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
         #extract date from filename of format VALORANT_replay_YYYY.MM.DD-HH.MM.mp4
         date = re.search(config.dateRegex, filename)
-        date = date.group(1) if date else "UnknownDate"
+        date = date.group(0) if date else "UnknownDate"
 
         if len(mergedTimeline) == 0:
             print(f"No highlight windows detected for {filename}.")
