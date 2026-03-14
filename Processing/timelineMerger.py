@@ -6,6 +6,9 @@ class timelineMerger:
 
     def mergeTimelines(self, timelines):
         """Merges overlapping and close timelines into a single sorted timeline without duplicates."""
+        if len(timelines) == 0:
+            return []
+
         timelines.sort(key=lambda x: x[0])
         mergedTimeline = []
         
