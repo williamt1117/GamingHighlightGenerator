@@ -6,6 +6,7 @@ from Processing.timelineMerger import timelineMerger
 from Processing.clipGenerator import clipGenerator
 
 import os
+import re
 from pathlib import Path
 
 if __name__ == "__main__":
@@ -35,16 +36,19 @@ if __name__ == "__main__":
         mergedTimeline = merger.mergeTimelines(timelines)
 
         #extract date from filename of format VALORANT_replay_YYYY.MM.DD-HH.MM.mp4
-        date = filename.split("_")[2].split("-")[0]
-        if not date:
-            print(f"Could not extract date from filename {filename}.")
-            date = "UNKNOWN"
+        date = re.search(config.dateRegex, filename)
+        date = date.group(1) if date else "UnknownDate"
+
+        if len(mergedTimeline) == 0:
+            print(f"No highlight windows detected for {filename}.")
+            continue
 
         counter = 1
-        outputFile = config.outputDirectory + f"/VALORANT_{date}_{counter:02d}.mp4"
+        outputFile = config.outputDirectory + f"/{config.predateFileName}{date}{config.postdateFileName}_{counter:02d}.mp4"
         while Path(outputFile).exists():
             counter += 1
-            outputFile = config.outputDirectory + f"/VALORANT_{date}_{counter:02d}.mp4"
-        
-        clipGenerator.generateClip(inputFile, mergedTimeline, outputFile)
-        print(f"Generated clip for {filename} at {outputFile}")
+            outputFile = config.outputDirectory + f"/{config.predateFileName}{date}{config.postdateFileName}_{counter:02d}.mp4"
+
+        generatedFile = clipGenerator.generateClip(inputFile, mergedTimeline, outputFile)
+        if generatedFile:
+            print(f"Generated clip for {filename} at {generatedFile}")
