@@ -7,8 +7,6 @@ from config import AudioDetectorConfig
 class audioDetector:
     def __init__(self):
         self.config = AudioDetectorConfig()
-        self.threshold = self.config.threshold
-        self.sr = self.config.sr
 
     def extractAudio(self, videoPath):
         """Extracts audio from the given video file and saves it as a temporary WAV file."""
@@ -16,36 +14,41 @@ class audioDetector:
         audioPath = tempFile.name
 
         inputStream = ffmpeg.input(videoPath)
-        outputStream = ffmpeg.output(inputStream.audio, audioPath, ac=1, ar=self.sr, format='wav')
+        outputStream = ffmpeg.output(inputStream.audio, audioPath, ac=1, ar=self.config.sr, format='wav')
         outputStream = ffmpeg.overwrite_output(outputStream)
         ffmpeg.run(outputStream, overwrite_output=True, quiet=True)
 
         return audioPath
     
-    def computeRms(self, audioPath):
-        """Computes root mean square for the audio file and returns alongside sample rate"""
+    def computeLevels(self, audioPath):
+        """Computes and returns per-frame peak and RMS levels."""
         y, sr = librosa.load(audioPath, sr=None)
-        rms = librosa.feature.rms(y=y)[0]
-        return rms, sr
-    
-    def findSpikes(self, rms, sr):
-        """Finds audio spikes based on RMS values and sample rate."""
 
-        #calculate the lower 25th percentile median
-        percentile25 = np.percentile(rms, 25)
-        #calculate mean and std of all values above the 25th percentile
-        abovePercentile = rms[rms > percentile25]
-        mean = np.mean(abovePercentile)
-        std = np.std(abovePercentile)
+        padded = np.pad(y, self.config.frameLength // 2, mode="constant")
+        frames = librosa.util.frame(padded, frame_length=self.config.frameLength, hop_length=self.config.hopLength)
 
-        threshold = mean + self.threshold * std
-        spikeFrames = np.where(rms > threshold)[0]
-        spikeTimes = librosa.frames_to_time(spikeFrames, sr=sr)
+        rms = np.sqrt(np.mean(frames ** 2, axis=0))
+        peaks = np.max(np.abs(frames), axis=0)
+
+        eps = 1e-12
+        rmsDb = 20 * np.log10(np.maximum(rms, eps))
+        peakDb = 20 * np.log10(np.maximum(peaks, eps))
+        return peakDb, rmsDb, sr
+
+    def findSpikes(self, peakDb, rmsDb, sr):
+        """Finds spikes by peaks and crest factor and return corresponding timestamps."""
+        crestDb = peakDb - rmsDb
+        spikeFrames = np.where(
+            (peakDb >= self.config.peakDbThreshold) &
+            (crestDb >= self.config.crestDbThreshold)
+        )[0]
+
+        spikeTimes = librosa.frames_to_time(spikeFrames, sr=sr, hop_length=self.config.hopLength)
         return spikeTimes.tolist()
 
     def detect(self, videoPath):
         """Detects audio spikes in the given video file."""
         audioPath = self.extractAudio(videoPath)
-        rms, sr = self.computeRms(audioPath)
-        spikeTimes = self.findSpikes(rms, sr)
+        peakDb, rmsDb, sr = self.computeLevels(audioPath)
+        spikeTimes = self.findSpikes(peakDb, rmsDb, sr)
         return spikeTimes
