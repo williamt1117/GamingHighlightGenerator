@@ -14,8 +14,8 @@ if __name__ == "__main__":
     killdetector = killDetector()
     windowCreator = clipWindowCreator()
     merger = timelineMerger()
-    clipGenerator = clipGenerator()
     config = MainConfig()
+    clipGenerator = clipGenerator(tempDir=config.tempDirectory)
 
     #iterate through all files in the input directory and process them
     for filename in os.listdir(config.inputDirectory):
@@ -25,9 +25,11 @@ if __name__ == "__main__":
         inputFile = config.inputDirectory + "/" + filename
 
         audioSpikeTimes = audiodetector.detect(inputFile)
-        print(f"Detected audio spikes at times: {audioSpikeTimes}")
+        if not audioSpikeTimes or len(audioSpikeTimes) == 0:
+            print("WARNING: No audio spikes detected in file: " + filename)
         killTimes = killdetector.detect(inputFile)
-        print(f"Detected kills at times: {killTimes}")
+        if not killTimes or len(killTimes) == 0:
+            print("WARNING: No kills detected in file: " + filename)
 
         audioClipWindows = [windowCreator.createWindow(t, ClipType.AUDIO) for t in audioSpikeTimes]
         killClipWindows = [windowCreator.createWindow(t, ClipType.KILL) for t in killTimes]
@@ -37,10 +39,14 @@ if __name__ == "__main__":
 
         #extract date from filename of format VALORANT_replay_YYYY.MM.DD-HH.MM.mp4
         date = re.search(config.dateRegex, filename)
-        date = date.group(0) if date else "UnknownDate"
+        if date:
+            date = date.group(0)
+        else:
+            print(f"WARNING: Could not extract date from filename: {filename}. Using 'UnknownDate' as placeholder.")
+            date = "UnknownDate"
 
         if len(mergedTimeline) == 0:
-            print(f"No highlight windows detected for {filename}.")
+            print(f"ERROR:No highlight windows detected for file: {filename}. Skipping clip generation.")
             continue
 
         counter = 1

@@ -2,6 +2,7 @@ class MainConfig:
     def __init__(self):
         self.inputDirectory = "Data/InputClips" # Directory to scan for input videos
         self.outputDirectory = "Data/OutputHighlights" # Directory to save generated highlight clips
+        self.tempDirectory = "Data/Temp" # Directory for ffmpeg temporary files (keep on the same drive as input/output)
 
         self.predateFileName = "VALORANT_" # Prefix for output filenames before the date
         self.postdateFileName = "" # Suffix for output filenames after the date and before the counter for duplicates
